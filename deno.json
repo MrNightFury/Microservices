@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "@types/amqplib": "npm:@types/amqplib@^0.10.7",
+    "amqplib": "npm:amqplib@^0.10.9"
+  }
+}
