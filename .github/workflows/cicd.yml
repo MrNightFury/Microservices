@@ -18,6 +18,7 @@ jobs:
       - uses: denoland/setup-deno@v2
 
       - name: Run tests
+        working-directory: pingService
         run: deno test --allow-all
         
   build-container:
