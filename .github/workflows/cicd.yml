@@ -15,12 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Prepare Deno
-        run: |
-          curl -fsSL https://deno.land/install.sh | sh
-          echo 'export DENO_INSTALL="$HOME/.deno"' >> ~/.bashrc
-          echo 'export PATH="$DENO_INSTALL/bin:$PATH"' >> ~/.bashrc
-          source ~/.bashrc
+      - uses: denoland/setup-deno@v2
 
       - name: Run tests
         run: deno test --allow-all
