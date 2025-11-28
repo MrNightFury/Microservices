@@ -2,7 +2,7 @@ name: Deno
 
 on:
   push:
-    branches: ["master"]
+    branches: []
   pull_request:
     branches: ["master"]
 
@@ -59,4 +59,45 @@ jobs:
         working-directory: pingService
         run: | 
           docker load --input ping-service.tar
-          docker push ${{ vars.DOCKER_USERNAME }}/ping-service:latest 
+          docker tag ping-service:latest ${{ vars.DOCKER_USERNAME }}/ping-service:latest
+          docker push ${{ vars.DOCKER_USERNAME }}/ping-service:latest
+
+  push-to-yandexcloud:
+    needs: build-container
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+          path: pingService
+          
+      - name: Log in YandexCloud
+        uses: docker/login-action@v3
+        with: 
+          registry: cr.yandex 
+          username: json_key 
+          password: ${{ secrets.YC_KEYS }} 
+
+      - name: Push container to YandexCloud
+        working-directory: pingService
+        run: | 
+          docker load --input ping-service.tar
+          docker tag ping-service:latest cr.yandex/${{ secrets.YC_REGISTRY_ID }}/ping-service:latest
+          docker push cr.yandex/${{ secrets.YC_REGISTRY_ID }}/ping-service:latest
+
+  deploy-on-yc:
+    runs-on: ubuntu-latest 
+    needs: push-to-yandexcloud
+    steps:
+    - name: Deploy serverless container 
+      uses: yc-actions/yc-sls-container-deploy@v4
+      with: 
+        yc-sa-json-credentials: ${{ secrets.YC_KEYS }} 
+        container-name: ${{ secrets.YC_CONTAINER_NAME }} 
+        folder-id: ${{ secrets.YC_FOLDER_ID }} 
+        revision-image-url: cr.yandex/${{ secrets.YC_REGISTRY_ID }}/ping-service:latest
+        revision-service-account-id: ${{ secrets.YC_SA_ID }} 
+        revision-memory: 512Mb
+        revision-env: | 
+          AMQP_URL=${{ secrets.ENV_AMQP_URL }}
