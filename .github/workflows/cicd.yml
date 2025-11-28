@@ -14,10 +14,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+      - name: check
+        run: |
+          ls -la
       
       - name: Build docker image
         run: | 
-          ls |
           docker build $GITHUB_WORKSPACE --file Dockerfile --tag delivery-service:latest 
 
       - name: log in dockerhub
