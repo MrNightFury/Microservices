@@ -10,22 +10,50 @@ permissions:
   contents: read
 
 jobs:
-  build-container:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      
+
+      - name: Run tests
+        run: deno test --allow-all
+        
+  build-container:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+          
+      - name: Build docker image
+        working-directory: pingService
+        run: | 
+          docker build . --tag ping-service:latest
+          docker save ping-service:latest -o ping-service.tar
+
+      - name: Upload image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image
+          path: pingService/ping-service.tar
+
+  push-to-dockerhub:
+    needs: build-container
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+          path: pingService
+          
       - name: log in dockerhub
         uses: docker/login-action@v3
         with: 
           username: ${{ vars.DOCKER_USERNAME }} 
           password: ${{ secrets.DOCKER_PASSWORD }}
-          
-      - name: Build docker image
+
+      - name: Push container to DockerHub
         working-directory: pingService
         run: | 
-          docker build . --tag ${{ vars.DOCKER_USERNAME }}/ping-service:latest 
-          
-      - name: Push container to DockerHub
-        run: | 
+          docker load --input ping-service.tar
           docker push ${{ vars.DOCKER_USERNAME }}/ping-service:latest 
