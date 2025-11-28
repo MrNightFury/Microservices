@@ -28,4 +28,4 @@ jobs:
           
       - name: Push container to DockerHub
         run: | 
-          docker push ${{ secrets.DOCKER_USERNAME }}/ping-service:latest 
+          docker push ${{ vars.DOCKER_USERNAME }}/ping-service:latest 
