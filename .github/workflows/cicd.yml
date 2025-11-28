@@ -13,12 +13,8 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - name: check
-        run: |
-          ls -la
-      
       - name: Build docker image
+        working-directory: ./pingService
         run: | 
           docker build $GITHUB_WORKSPACE --file Dockerfile --tag delivery-service:latest 
 
