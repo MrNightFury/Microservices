@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Build docker image
-        working-directory: ./pingService
+        working-directory: pingService
         run: | 
           docker build $GITHUB_WORKSPACE --file Dockerfile --tag delivery-service:latest 
 
