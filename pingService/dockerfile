@@ -1,0 +1,8 @@
+from denoland/deno:alpine
+
+workdir /app
+copy . .
+run deno cache src/main.ts
+user deno
+expose 80
+cmd ["deno", "run", "run"]
