@@ -17,7 +17,9 @@ jobs:
         working-directory: pingService
         run: | 
           docker build . --tag delivery-service:latest 
-
+      - name: check
+        run: |
+          ls -la
       - name: log in dockerhub
         uses: docker/login-action@v3
         with: 
