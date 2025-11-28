@@ -59,4 +59,29 @@ jobs:
         working-directory: pingService
         run: | 
           docker load --input ping-service.tar
-          docker push ${{ vars.DOCKER_USERNAME }}/ping-service:latest 
+          docker tag ping-service:latest ${{ vars.DOCKER_USERNAME }}/ping-service:latest
+          docker push ${{ vars.DOCKER_USERNAME }}/ping-service:latest
+
+  push-to-yandexcloud:
+    needs: build-container
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+          path: pingService
+          
+      - name: Log in YandexCloud
+        uses: docker/login-action@v3
+        with: 
+          registry: cr.yandex 
+          username: json_key 
+          password: ${{ secrets.YC_KEYS }} 
+
+      - name: Push container to YandexCloud
+        working-directory: pingService
+        run: | 
+          docker load --input ping-service.tar
+          docker tag ping-service:latest cr.yandex/${{ secrets.YC_REGISTRY_ID }}/ping-service:latest
+          docker push cr.yandex/${{ secrets.YC_REGISTRY_ID }}/ping-service:latest
