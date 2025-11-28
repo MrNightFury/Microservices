@@ -15,6 +15,10 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Prepare Deno
+        run: |
+          curl -fsSL https://deno.land/install.sh | sh
+
       - name: Run tests
         run: deno test --allow-all
         
