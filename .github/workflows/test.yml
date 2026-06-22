@@ -1,0 +1,90 @@
+... 
+jobs: 
+  build-and-push: 
+    runs-on: ubuntu-latest 
+    steps:
+      - uses: actions/checkout@3
+
+      - name: Build docker image 
+        run: docker build . --file Dockerfile --tag delivery-service:latest 
+
+
+        # /.github/workflows/ci-cd.yml 
+...  
+      - name: Log in to DockerHub 
+        uses: docker/login-action@v3.0.0 
+        with: 
+          username: ${{ secrets.DOCKER_USERNAME }} 
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Push tag to DockerHub 
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/delivery-service:latest 
+...    
+... 
+
+# /.github/workflows/ci-cd.yml 
+...
+      - name: Build docker image 
+        run: docker build . --file Dockerfile --tag cr.yandex/${{secrets.YC_REGISTRY_ID }}/delivery-service:latest 
+...
+      - name: Login to YC Registry 
+        uses: docker/login-action@v3.0.0 
+        with: 
+          registry: cr.yandex 
+          username: json_key 
+          password: ${{ secrets.YC_KEYS }}
+
+      - name: Push tag to YC Registry 
+        run: docker push cr.yandex/${{ secrets.YC_REGISTRY_ID }}/delivery-service:latest     
+... 
+
+... 
+  deploy: 
+    name: Deploy 
+    runs-on: ubuntu-latest 
+    needs: [build-and-push-to-yc] 
+    steps:
+    - name: Deploy serverless container 
+      uses: yc-actions/yc-sls-container-deploy@v1 
+      with: 
+        yc-sa-json-credentials: ${{ secrets.YC_KEYS }} 
+        container-name: ${{ secrets.YC_CONTAINER_NAME }} 
+        folder-id: ${{ secrets.YC_FOLDER_ID }} 
+        revision-image-url: cr.yandex/${{ secrets.YC_REGISTRY_ID }}/item-service:latest 
+        revision-service-account-id: ${{ secrets.YC_SA_ID }} 
+        revision-env: |
+          AMQP_URL=${{ secrets.ENV_AMQP_URL }} 
+          POSTGRES_URL=${{ secrets.ENV_POSTGRES_URL }}
+
+
+# /.github/workflows/ci-cd.yml 
+ 
+... 
+jobs: 
+  test: 
+    name: Run tests 
+    runs-on: ubuntu-latest 
+    steps: 
+      - uses: actions/checkout@v3 
+ 
+... 
+
+
+ 
+      - name: Prepare e2e tests 
+        run: | 
+          sudo docker stop pg-tests 
+          sudo docker build . --file Dockerfile --tag back-tests 
+          sudo docker run -e POSTGRES_PASSWORD=password -p 5432:5432 -d 
+postgres:14 
+          sleep 5 
+          alembic upgrade head 
+          sudo docker run -p 8000:80 -e 
+AMQP_URL=amqp://guest:guest123@51.250.26.59:5672/ -e 
+POSTGRES_URL=postgresql://postgres:password@host.docker.internal:5432/postgres -d 
+back-tests 
+ 
+ 
+      - name: Run e2e tests 
+        run: | 
+          pytest ./tests/integration 

@@ -1,0 +1,69 @@
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    ports: ["9090:9090"]
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    image: grafana/grafana:latest
+    ports: ["3000:3000"]
+
+
+
+global:
+  scrape_interval: 15s # как часто опрашивать цели
+
+scrape_configs:
+  - job_name: 'my-service'
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['itemService:8080'] # адрес приложения
+
+# HELP http_requests_total Total HTTP requests
+# TYPE http_requests_total counter
+http_requests_total{method="GET",status="200"} 15432
+
+
+services:
+  loki:
+    image: grafana/loki:latest
+    ports: ["3100:3100"]
+
+  promtail:
+    image: grafana/promtail:latest
+    volumes:
+      - /var/log:/var/log
+      - ./promtail.yml:/etc/promtail/config.yml
+    command: -config.file=/etc/promtail/config.yml
+
+
+
+server:
+  http_listen_port: 9080
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  - job_name: app-logs
+    static_configs:
+      - targets: [localhost]
+        labels:
+          job: my-service
+          __path__: /var/log/my-service/*.log
+
+
+# docker-compose.monitoring.yml (фрагмент)
+services:
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686"   # веб-интерфейс Jaeger
+      - "4317:4317"     # приём по OTLP/gRPC
+      - "4318:4318"     # приём по OTLP/HTTP
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
