@@ -85,7 +85,7 @@ jobs:
       - name: Push container to YandexCloud
         working-directory: pingService
         run: | 
-          docker load --input pingService/ping-service.tar
+          docker load --input ping-service.tar
           docker tag ping-service:latest cr.yandex/${{ secrets.YC_REGISTRY_ID }}/ping-service:latest
           docker push cr.yandex/${{ secrets.YC_REGISTRY_ID }}/ping-service:latest
 
