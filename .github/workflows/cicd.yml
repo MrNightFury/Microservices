@@ -47,7 +47,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: docker-image
-          path: pingService
+          path: ping-service.tar
       
       - name: load container image
         run: docker load --input ping-service.tar
@@ -73,7 +73,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: docker-image
-          path: pingService
+          path: ping-service.tar
           
       - name: Log in YandexCloud
         uses: docker/login-action@v3
