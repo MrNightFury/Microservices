@@ -1,10 +1,10 @@
 import pika
 import sys
 
-connect = pika.BlockingConnection(pika.ConnectionParameters('51.250.26.59', 5672, credentials=pika.PlainCredentials('guest', 'guest123')))
+connect = pika.BlockingConnection(pika.ConnectionParameters('localhost', 5672, credentials=pika.PlainCredentials('guest', 'guest')))
 channel = connect.channel()
 
-channel.queue_declare(queue='IKBO-26-22_Vokhrin')
+channel.queue_declare(queue='IKBO-26-22_Vokhrin', durable=True)
 channel.basic_qos(prefetch_count=1)
 
 message = "." * int(sys.argv[1])

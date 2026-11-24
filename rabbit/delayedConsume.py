@@ -1,7 +1,7 @@
 from time import sleep
 import pika
 
-connect = pika.BlockingConnection(pika.ConnectionParameters('51.250.26.59', 5672, credentials=pika.PlainCredentials('guest', 'guest123')))
+connect = pika.BlockingConnection(pika.ConnectionParameters('localhost', 5672, credentials=pika.PlainCredentials('guest', 'guest')))
 channel = connect.channel()
 
 queue_name = 'IKBO-26-22_Vokhrin'

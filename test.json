@@ -1,7 +1,16 @@
 {
-  "timestamp": "2025-01-15T10:23:45.123Z",
-  "level": "ERROR",
-  "service": "order-service",
-  "trace_id": "abc123",
-  "message": "Database connection refused"
+  "name": "test-project",
+  "version": "1.0.0",
+  "environment": "development",
+  "database": {
+    "host": "localhost",
+    "port": 5432,
+    "name": "test_db"
+  },
+  "features": {
+    "auth": true,
+    "logging": true,
+    "caching": false
+  },
+  "tags": ["microservices", "backend", "api"]
 }

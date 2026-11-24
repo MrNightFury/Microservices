@@ -45,8 +45,8 @@ class DeliveryService():
         if delivery.status == DeliveryStatuses.DONE: 
             raise ValueError 
         delivery.status = DeliveryStatuses.CANCELED 
-        return self.delivery_repo.set_status(delivery) 
-    
+        return self.delivery_repo.set_status(delivery)
+
 
 # tracing.py
 from opentelemetry import trace
@@ -98,3 +98,17 @@ def get_orders():
     return {"orders": []}
 
 from sqlalchemy.orm import declarative_base
+
+def a():
+    async def b(msg):
+
+        await msg.ack() 
+class Item:
+    pass
+
+def c(_items):
+    def create_item(self, item: Item) -> Item:
+        if any(it.id == item.id for it in _items):
+            raise KeyError(f"Item {item.id} already exists")
+        _items.append(item)
+        return item
